@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - John Smith, ing.</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Open Sans', Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333333;
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .resume-container {
+            width: 8.5in;
+            min-height: 11in;
+            background-color: #ffffff;
+            display: flex;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        /* LEFT SIDEBAR */
+        .sidebar {
+            width: 32%;
+            background-color: #0b2545;
+            color: #ffffff;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .name-block {
+            border-bottom: 2px solid #2980b9;
+            padding-bottom: 20px;
+        }
+
+        .name-block h1 {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.15;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .contact-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-size: 11.5px;
+            color: #d1d8e0;
+        }
+
+        .contact-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            word-break: break-all;
+        }
+
+        .contact-list i {
+            color: #3897f0;
+            font-size: 13px;
+            width: 14px;
+            text-align: center;
+        }
+
+        .sidebar-section {
+            border-top: 1px solid #1c3b63;
+            padding-top: 18px;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-list {
+            list-style-type: disc;
+            padding-left: 16px;
+            font-size: 11.5px;
+            line-height: 1.6;
+            color: #d1d8e0;
+        }
+
+        .cert-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            font-size: 11px;
+            color: #d1d8e0;
+            line-height: 1.35;
+        }
+
+        .cert-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .cert-list i {
+            color: #3897f0;
+            font-size: 15px;
+            margin-top: 2px;
+        }
+
+        /* RIGHT MAIN CONTENT */
+        .main-content {
+            width: 68%;
+            padding: 36px 36px 36px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .section-icon {
+            background-color: #1a4473;
+            color: #ffffff;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #000000;
+            white-space: nowrap;
+        }
+
+        .section-line {
+            flex-grow: 1;
+            height: 1px;
+            background-color: #9aa0a6;
+            margin-left: 6px;
+        }
+
+        .profile-text {
+            font-size: 11px;
+            line-height: 1.45;
+            color: #333333;
+            text-align: justify;
+            padding-left: 38px;
+        }
+
+        /* TIMELINE / TWO-COLUMN ENTRY LAYOUT */
+        .entries-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding-left: 2px;
+        }
+
+        .entry {
+            display: grid;
+            grid-template-columns: 85px 12px 1fr;
+            column-gap: 8px;
+            font-size: 11px;
+        }
+
+        .entry-date {
+            color: #333333;
+            font-size: 10.5px;
+            font-weight: 600;
+            line-height: 1.35;
+            text-align: right;
+            padding-right: 4px;
+        }
+
+        .entry-timeline {
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        .timeline-dot {
+            width: 7px;
+            height: 7px;
+            background-color: #1a4473;
+            border-radius: 50%;
+            margin-top: 4px;
+            z-index: 2;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 10px;
+            bottom: -16px;
+            width: 1px;
+            background-color: #b0bec5;
+            z-index: 1;
+        }
+
+        .entry:last-child .timeline-line {
+            display: none;
+        }
+
+        .entry-details {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding-left: 4px;
+        }
+
+        .entry-header {
+            line-height: 1.3;
+        }
+
+        .entry-title {
+            font-weight: 700;
+            color: #000000;
+            font-size: 11px;
+        }
+
+        .entry-subtitle {
+            color: #4f5b66;
+            font-size: 10.5px;
+        }
+
+        .entry-details ul {
+            list-style-type: disc;
+            padding-left: 14px;
+            margin-top: 3px;
+        }
+
+        .entry-details li {
+            font-size: 10px;
+            line-height: 1.35;
+            color: #333333;
+            margin-bottom: 2.5px;
+            text-align: justify;
+        }
+
+        /* Print styles for export / PDF conversion */
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+
+            .resume-container {
+                box-shadow: none;
+                width: 100%;
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="resume-container">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar">
+            <div class="name-block">
+                <h1>John<br>Smith, ing.</h1>
+            </div>
+
+            <ul class="contact-list">
+                <li>
+                    <i class="fa-solid fa-phone"></i>
+                    <span>(514) 555-0146</span>
+                </li>
+                <li>
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>john.smith@example.com</span>
+                </li>
+                <li>
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>Montréal, QC</span>
+                </li>
+            </ul>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Compétences</div>
+                <ul class="sidebar-list">
+                    <li>Gestion de projets &amp; coordination</li>
+                    <li>AutoCAD &amp; Revit</li>
+                    <li>Estimation des coûts &amp; budgets</li>
+                    <li>Analyse structurelle (ETABS, SAFE)</li>
+                    <li>Contrôle qualité &amp; conformité</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Langues</div>
+                <ul class="sidebar-list">
+                    <li>Français (langue maternelle)</li>
+                    <li>Anglais (courant / professionnel)</li>
+                    <li>Espagnol (intermédiaire)</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Permis &amp; Certifications</div>
+                <ul class="cert-list">
+                    <li>
+                        <i class="fa-regular fa-address-card"></i>
+                        <span>Professionnel en gestion de projet (PMP)®</span>
+                    </li>
+                    <li>
+                        <i class="fa-solid fa-id-badge"></i>
+                        <span>Santé et sécurité générale sur les chantiers</span>
+                    </li>
+                    <li>
+                        <i class="fa-solid fa-square-plus"></i>
+                        <span>Certificat de secourisme en milieu de travail</span>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- RIGHT MAIN CONTENT -->
+        <main class="main-content">
+
+            <!-- PROFIL -->
+            <section>
+                <div class="section-header">
+                    <div class="section-icon"><i class="fa-solid fa-user"></i></div>
+                    <div class="section-title">Profil</div>
+                    <div class="section-line"></div>
+                </div>
+                <p class="profile-text">
+                    Ingénieur civil professionnel et gestionnaire de projets avec plus de 5 ans d'expérience dans la planification d'infrastructures, la modélisation technique et la direction d'équipes multidisciplinaires. Reconnu pour optimiser les budgets, respecter les échéanciers serrés et garantir les plus hauts standards de qualité.
+                </p>
+            </section>
+
+            <!-- ÉDUCATION -->
+            <section>
+                <div class="section-header">
+                    <div class="section-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="section-title">Éducation</div>
+                    <div class="section-line"></div>
+                </div>
+                <div class="entries-container">
+                    <div class="entry">
+                        <div class="entry-date">2017 – 2021</div>
+                        <div class="entry-timeline">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-line"></div>
+                        </div>
+                        <div class="entry-details">
+                            <div class="entry-header">
+                                <span class="entry-title">Baccalauréat en génie civil (B.Ing.)</span><br>
+                                <span class="entry-subtitle">Université d'Ingénierie &amp; Technologie, Montréal, QC</span>
+                            </div>
+                            <ul>
+                                <li>Spécialisation: Infrastructures &amp; Structures Durables</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="entry">
+                        <div class="entry-date">2015 – 2017</div>
+                        <div class="entry-timeline">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-line"></div>
+                        </div>
+                        <div class="entry-details">
+                            <div class="entry-header">
+                                <span class="entry-title">DEC en Sciences Pures</span><br>
+                                <span class="entry-subtitle">Collège d'Études Supérieures, Montréal, QC</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROJETS -->
+            <section>
+                <div class="section-header">
+                    <div class="section-icon"><i class="fa-solid fa-briefcase"></i></div>
+                    <div class="section-title">Projets</div>
+                    <div class="section-line"></div>
+                </div>
+                <div class="entries-container">
+                    <div class="entry">
+                        <div class="entry-date">Sept. 2020 –<br>Avr. 2021</div>
+                        <div class="entry-timeline">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-line"></div>
+                        </div>
+                        <div class="entry-details">
+                            <div class="entry-header">
+                                <span class="entry-title">Projet d'optimisation des infrastructures urbaines</span> – <span
+                                    class="entry-subtitle">Programme d'ingénierie durable, QC</span>
+                            </div>
+                            <ul>
+                                <li>Direction d'une équipe de sept ingénieurs pour concevoir un complexe multifonctionnel durable intégrant des systèmes parasismiques avancés.</li>
+                                <li>Modélisation complète sous ETABS et réalisation des analyses de charge statiques et dynamiques.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="entry">
+                        <div class="entry-date">Fév. 2020</div>
+                        <div class="entry-timeline">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-line"></div>
+                        </div>
+                        <div class="entry-details">
+                            <div class="entry-header">
+                                <span class="entry-title">Compétition nationale de conception technique</span> – <span
+                                    class="entry-subtitle">Société Canadienne de Génie Civil</span>
+                            </div>
+                            <ul>
+                                <li>Conception et fabrication d'un prototype structurel à haute efficacité ayant obtenu le 1er prix d'optimisation du ratio résistance/poids.</li>
+                                <li>Rédaction du rapport technique et présentation devant un panel d'experts industriels.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- EXPÉRIENCE DE TRAVAIL -->
+            <section>
+                <div class="section-header">
+                    <div class="section-icon"><i class="fa-solid fa-briefcase"></i></div>
+                    <div class="section-title">Expérience de travail</div>
+                    <div class="section-line"></div>
+                </div>
+                <div class="entries-container">
+
+                    <div class="entry">
+                        <div class="entry-date">Août 2022 –<br>Présent</div>
+                        <div class="entry-timeline">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-line"></div>
+                        </div>
+                        <div class="entry-details">
+                            <div class="entry-header">
+                                <span class="entry-title">Chargé de projets principal – Infrastructures</span><br>
+                                <span class="entry-subtitle">Acme Global Technologies, QC</span>
+                            </div>
+                            <ul>
+                                <li>Superviser simultanément de multiples projets d'infrastructure majeurs avec des enveloppes budgétaires supérieures à 15M$.</li>
+                                <li>Coordonner les équipes d'ingénieurs, architectes et sous-traitants pour assurer une livraison rigoureuse dans les délais.</li>
+                                <li>Préparer les devis techniques, gérer les appels d'offres et négocier les ententes contractuelles avec les partenaires.</li>
+                                <li>Mettre en place des protocoles stricts de contrôle de qualité et d'assurance environnementale sur l'ensemble des chantiers.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="entry">
+                        <div class="entry-date">Mai 2021 –<br>Août 2022</div>
+                        <div class="entry-timeline">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-line"></div>
+                        </div>
+                        <div class="entry-details">
+                            <div class="entry-header">
+                                <span class="entry-title">Ingénieur de projets &amp; Estimation des coûts</span> – <span
+                                    class="entry-subtitle">Apex Solutions Inc., QC</span>
+                            </div>
+                            <ul>
+                                <li>Élaborer des modèles prévisionnels d'estimation des coûts pour des projets d'envergure commerciale et résidentielle.</li>
+                                <li>Analyser les plans d'ingénierie et effectuer les relevés quantitatifs détaillés à l'aide d'outils numériques spécialisés.</li>
+                                <li>Optimiser la gestion de la chaîne d'approvisionnement, générant une réduction des coûts directs de 12%.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="entry">
+                        <div class="entry-date">Janv. 2020 –<br>Avr. 2021</div>
+                        <div class="entry-timeline">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-line"></div>
+                        </div>
+                        <div class="entry-details">
+                            <div class="entry-header">
+                                <span class="entry-title">Stagiaire en ingénierie de structures</span> – <span
+                                    class="entry-subtitle">Horizon Capital Group, QC</span>
+                            </div>
+                            <ul>
+                                <li>Participer à la revue des dessins d'atelier et à la validation de la conformité aux codes du bâtiment en vigueur.</li>
+                                <li>Rédiger les rapports d'inspection périodiques et documenter l'état d'avancement pour les clients et partenaires.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+
+</html>
