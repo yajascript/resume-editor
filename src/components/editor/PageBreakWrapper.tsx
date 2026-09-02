@@ -47,18 +47,21 @@ export const PageBreakWrapper: React.FC<PageBreakWrapperProps> = ({
 
       const elementRect = element.getBoundingClientRect();
       const sheetRect = sheet.getBoundingClientRect();
-      const unspacedTop = elementRect.top - sheetRect.top;
 
-      if (unspacedTop < 0) return;
+      // Cancel out any canvas CSS zoom transforms (e.g. scale(0.75), scale(1))
+      const scale = sheetRect.width > 0 && sheetWidth > 0 ? sheetRect.width / sheetWidth : 1;
+      const unscaledTop = (elementRect.top - sheetRect.top) / scale;
 
-      const offsetInCurrentPage = unspacedTop % singlePageHeight;
-      const newPageTopPadding = 24;
+      if (unscaledTop < 0) return;
+
+      const offsetInCurrentPage = unscaledTop % singlePageHeight;
+      const targetPageTopPadding = isHeader ? 28 : 20;
 
       let neededSpacer = 0;
-      let targetPage = Math.floor(unspacedTop / singlePageHeight) + 1;
+      let targetPage = Math.floor(unscaledTop / singlePageHeight) + 1;
 
-      if (offsetInCurrentPage > 15) {
-        neededSpacer = (singlePageHeight - offsetInCurrentPage) + newPageTopPadding;
+      if (offsetInCurrentPage > targetPageTopPadding + 4) {
+        neededSpacer = singlePageHeight - offsetInCurrentPage + targetPageTopPadding;
         targetPage += 1;
       }
 
@@ -79,7 +82,7 @@ export const PageBreakWrapper: React.FC<PageBreakWrapperProps> = ({
         resizeObserver.disconnect();
       };
     }
-  }, [pageBreakBefore, isA4]);
+  }, [pageBreakBefore, isA4, isHeader, editorState.zoomLevelPercentage]);
 
   return (
     <div
@@ -104,14 +107,14 @@ export const PageBreakWrapper: React.FC<PageBreakWrapperProps> = ({
         />
       )}
 
-      {/* Visual Page Break Indicator Line (Screen Only - Excluded from PDF export) */}
+      {/* Visual Page Break Indicator Line (Screen Only - Overlay with zero document layout height) */}
       {pageBreakBefore && (
         <div
           data-pagebreak-ui="true"
-          className="pagebreak-ui-control no-print print:hidden w-full my-2 flex items-center gap-2 select-none relative z-20"
+          className="pagebreak-ui-control no-print print:hidden w-full h-0 relative z-20 select-none flex items-center justify-center -translate-y-2.5"
         >
-          <div className="grow border-t-2 border-dashed border-blue-400 dark:border-blue-500 opacity-80" />
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-bold border border-blue-300 dark:border-blue-700 shadow-xs">
+          <div className="absolute inset-x-0 border-t-2 border-dashed border-blue-400 dark:border-blue-500 opacity-80" />
+          <div className="relative flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-bold border border-blue-300 dark:border-blue-700 shadow-xs">
             <FileText className="w-3 h-3" />
             <span>
               {translate(lang, 'pageBreak.badge', { page: targetPageNumber })}
@@ -130,7 +133,6 @@ export const PageBreakWrapper: React.FC<PageBreakWrapperProps> = ({
               </button>
             )}
           </div>
-          <div className="grow border-t-2 border-dashed border-blue-400 dark:border-blue-500 opacity-80" />
         </div>
       )}
 

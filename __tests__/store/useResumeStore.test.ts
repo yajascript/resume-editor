@@ -108,28 +108,16 @@ describe('useResumeStore', () => {
     expect(useResumeStore.getState().savedVersions[0].versionName).toBe('Version A');
   });
 
-  it('should toggle dual view mode and synchronize bilingual datasets', () => {
-    expect(useResumeStore.getState().editorState.isDualViewMode).toBe(true);
+  it('should toggle current language and preserve resume data', () => {
+    expect(useResumeStore.getState().editorState.currentLanguage).toBe('en');
 
-    useResumeStore.getState().toggleDualViewMode();
-    expect(useResumeStore.getState().editorState.isDualViewMode).toBe(false);
-
-    useResumeStore.getState().toggleDualViewMode();
-    expect(useResumeStore.getState().editorState.isDualViewMode).toBe(true);
-
-    // Edit in English
-    useResumeStore.getState().setLanguage('en');
     useResumeStore.getState().updateContactInformation('fullName', 'John Smith EN');
-    expect(useResumeStore.getState().englishResumeData.contactInformation.fullName).toBe('John Smith EN');
-
-    // Switch to French and edit
     useResumeStore.getState().setLanguage('fr');
     expect(useResumeStore.getState().editorState.currentLanguage).toBe('fr');
-    useResumeStore.getState().updateContactInformation('fullName', 'Jean Dupont FR');
-    expect(useResumeStore.getState().frenchResumeData.contactInformation.fullName).toBe('Jean Dupont FR');
+    expect(useResumeStore.getState().resumeData.contactInformation.fullName).toBe('John Smith EN');
 
-    // Switch back to English - English data is preserved
     useResumeStore.getState().setLanguage('en');
+    expect(useResumeStore.getState().editorState.currentLanguage).toBe('en');
     expect(useResumeStore.getState().resumeData.contactInformation.fullName).toBe('John Smith EN');
   });
 
@@ -176,4 +164,3 @@ describe('useResumeStore', () => {
     expect(useResumeStore.getState().resumeData.sectionPageBreaks?.experience).toBe(false);
   });
 });
-

@@ -22,20 +22,33 @@ interface ImportHtmlModalProps {
 }
 
 export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClose }) => {
-  const { setResumeData, editorState } = useResumeStore();
+  const { setResumeData, setLanguage, editorState } = useResumeStore();
   const lang = editorState.currentLanguage;
 
+  const [targetLang, setTargetLang] = useState<'en' | 'fr'>(editorState.currentLanguage);
   const [activeTab, setActiveTab] = useState<'html' | 'json' | 'text'>('html');
   const [inputText, setInputText] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Close on Escape key press
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onClose();
+  // Sync default target language when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setTargetLang(editorState.currentLanguage);
+      setSuccessMessage(null);
+      setErrorMessage(null);
     }
-  }, [onClose]);
+  }, [isOpen, editorState.currentLanguage]);
+
+  // Close on Escape key press
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -58,11 +71,13 @@ export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClos
     try {
       const parsedData = SmartResumeParser.parse(inputText);
       setResumeData(parsedData);
-      setSuccessMessage(translate(lang, 'import.success'));
+      setLanguage(targetLang);
+      const langLabel = targetLang === 'en' ? 'English' : 'Français';
+      setSuccessMessage(translate(lang, 'import.successLanguage', { language: langLabel }));
       setTimeout(() => {
         onClose();
         setSuccessMessage(null);
-      }, 1200);
+      }, 1000);
     } catch (err) {
       console.error(err);
       setErrorMessage(translate(lang, 'import.error'));
@@ -71,7 +86,8 @@ export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClos
 
   const handleLoadSampleFrench = () => {
     setResumeData(structuredClone(initialFrenchResumeData));
-    setSuccessMessage(translate(lang, 'import.success'));
+    setLanguage('fr');
+    setSuccessMessage(translate(lang, 'import.successLanguage', { language: 'Français' }));
     setTimeout(() => {
       onClose();
       setSuccessMessage(null);
@@ -80,7 +96,8 @@ export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClos
 
   const handleLoadSampleEnglish = () => {
     setResumeData(structuredClone(initialEnglishResumeData));
-    setSuccessMessage(translate(lang, 'import.success'));
+    setLanguage('en');
+    setSuccessMessage(translate(lang, 'import.successLanguage', { language: 'English' }));
     setTimeout(() => {
       onClose();
       setSuccessMessage(null);
@@ -133,26 +150,60 @@ export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClos
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
             title="Close (Esc)"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Target Language Selection */}
+        <div className="flex flex-col gap-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+          <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+            {translate(lang, 'import.targetLanguage')}:
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setTargetLang('en')}
+              className={`py-2 px-3 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                targetLang === 'en'
+                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border-blue-400 dark:border-blue-500 shadow-xs ring-2 ring-blue-500/20'
+                  : 'bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700'
+              }`}
+            >
+              <span className="text-base">🇺🇸</span>
+              <span>{translate(lang, 'import.targetEn')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTargetLang('fr')}
+              className={`py-2 px-3 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                targetLang === 'fr'
+                  ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border-blue-400 dark:border-blue-500 shadow-xs ring-2 ring-blue-500/20'
+                  : 'bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-700'
+              }`}
+            >
+              <span className="text-base">🇫🇷</span>
+              <span>{translate(lang, 'import.targetFr')}</span>
+            </button>
+          </div>
+        </div>
+
         {/* Quick Sample Presets */}
-        <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={handleLoadSampleFrench}
-            className="py-1.5 px-3 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all text-center"
+            className="py-1.5 px-3 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-all text-center cursor-pointer"
           >
             🇫🇷 {translate(lang, 'import.loadSampleFrench')}
           </button>
           <button
             type="button"
             onClick={handleLoadSampleEnglish}
-            className="py-1.5 px-3 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all text-center"
+            className="py-1.5 px-3 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-all text-center cursor-pointer"
           >
             🇬🇧 {translate(lang, 'import.loadSampleEnglish')}
           </button>
@@ -163,7 +214,7 @@ export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClos
           <button
             type="button"
             onClick={() => setActiveTab('html')}
-            className={`flex items-center gap-1.5 py-2 px-3 text-xs font-semibold border-b-2 transition-all ${
+            className={`flex items-center gap-1.5 py-2 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'html'
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -175,7 +226,7 @@ export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClos
           <button
             type="button"
             onClick={() => setActiveTab('json')}
-            className={`flex items-center gap-1.5 py-2 px-3 text-xs font-semibold border-b-2 transition-all ${
+            className={`flex items-center gap-1.5 py-2 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'json'
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -187,7 +238,7 @@ export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClos
           <button
             type="button"
             onClick={() => setActiveTab('text')}
-            className={`flex items-center gap-1.5 py-2 px-3 text-xs font-semibold border-b-2 transition-all ${
+            className={`flex items-center gap-1.5 py-2 px-3 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
               activeTab === 'text'
                 ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -201,7 +252,7 @@ export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClos
         {/* Text Area */}
         <div className="flex flex-col gap-2">
           <textarea
-            rows={7}
+            rows={6}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder={
@@ -248,14 +299,14 @@ export const ImportHtmlModal: React.FC<ImportHtmlModalProps> = ({ isOpen, onClos
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
+            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all cursor-pointer"
           >
             {translate(lang, 'import.close')}
           </button>
           <button
             type="button"
             onClick={handleImportAndApply}
-            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all"
+            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-all cursor-pointer"
           >
             {translate(lang, 'import.parseButton')}
           </button>

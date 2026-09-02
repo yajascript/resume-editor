@@ -339,12 +339,16 @@ export const SidebarNavyTemplate: React.FC<ITemplateProps> = ({
                       {/* Timeline Dot & Line */}
                       <div className="relative flex justify-center">
                         <div
-                          className="w-1.5 h-1.5 rounded-full mt-1.5 z-10"
+                          className="w-1.5 h-1.5 rounded-full mt-1.5 z-10 shrink-0"
                           style={{ backgroundColor: accentColor || '#1a4473' }}
                         />
-                        {index < educationList.length - 1 && (
-                          <div className="absolute top-2.5 bottom-[-14px] w-[1px] bg-[#b0bec5]" />
-                        )}
+                        <div
+                          className={`absolute top-2.5 w-[1px] bg-[#b0bec5] ${
+                            index < educationList.length - 1 && !educationList[index + 1]?.pageBreakBefore
+                              ? 'bottom-[-14px]'
+                              : 'bottom-1'
+                          }`}
+                        />
                       </div>
 
                       {/* Details Column */}
@@ -448,12 +452,16 @@ export const SidebarNavyTemplate: React.FC<ITemplateProps> = ({
                       {/* Timeline Dot & Line */}
                       <div className="relative flex justify-center">
                         <div
-                          className="w-1.5 h-1.5 rounded-full mt-1.5 z-10"
+                          className="w-1.5 h-1.5 rounded-full mt-1.5 z-10 shrink-0"
                           style={{ backgroundColor: accentColor || '#1a4473' }}
                         />
-                        {index < projectsList.length - 1 && (
-                          <div className="absolute top-2.5 bottom-[-14px] w-[1px] bg-[#b0bec5]" />
-                        )}
+                        <div
+                          className={`absolute top-2.5 w-[1px] bg-[#b0bec5] ${
+                            index < projectsList.length - 1 && !projectsList[index + 1]?.pageBreakBefore
+                              ? 'bottom-[-14px]'
+                              : 'bottom-1'
+                          }`}
+                        />
                       </div>
 
                       {/* Details Column */}
@@ -562,12 +570,16 @@ export const SidebarNavyTemplate: React.FC<ITemplateProps> = ({
                       {/* Timeline Dot & Line */}
                       <div className="relative flex justify-center">
                         <div
-                          className="w-1.5 h-1.5 rounded-full mt-1.5 z-10"
+                          className="w-1.5 h-1.5 rounded-full mt-1.5 z-10 shrink-0"
                           style={{ backgroundColor: accentColor || '#1a4473' }}
                         />
-                        {index < experienceList.length - 1 && (
-                          <div className="absolute top-2.5 bottom-[-14px] w-[1px] bg-[#b0bec5]" />
-                        )}
+                        <div
+                          className={`absolute top-2.5 w-[1px] bg-[#b0bec5] ${
+                            index < experienceList.length - 1 && !experienceList[index + 1]?.pageBreakBefore
+                              ? 'bottom-[-14px]'
+                              : 'bottom-1'
+                          }`}
+                        />
                       </div>
 
                       {/* Details Column */}

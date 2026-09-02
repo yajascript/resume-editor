@@ -10,7 +10,7 @@ describe('ResumeEditorPage Component Integration', () => {
     useResumeStore.getState().setLanguage('en');
   });
 
-  it('should render the header, sidebar, and canvas with English default CV content', () => {
+  it('should render the header, sidebar, and canvas with default resume content', () => {
     render(<ResumeEditorPage />);
 
     expect(screen.getAllByText('Resume Builder').length).toBeGreaterThan(0);
@@ -19,7 +19,7 @@ describe('ResumeEditorPage Component Integration', () => {
     expect(screen.getAllByText(/john\.smith@example\.com/i).length).toBeGreaterThan(0);
   });
 
-  it('should toggle language from English to French and update UI text', () => {
+  it('should toggle language from English to French via sidebar', () => {
     render(<ResumeEditorPage />);
 
     const frButtons = screen.getAllByText('FR');
@@ -40,17 +40,13 @@ describe('ResumeEditorPage Component Integration', () => {
     expect(useResumeStore.getState().editorState.activeTemplateId).toBe('tech-minimalist');
   });
 
-  it('should render side-by-side bilingual previews in dual view mode', () => {
+  it('should open export modal with View PDF and Download PDF options', () => {
     render(<ResumeEditorPage />);
 
-    const dualButtons = screen.getAllByText('EN & FR');
-    expect(dualButtons.length).toBeGreaterThan(0);
-    fireEvent.click(dualButtons[0]);
+    const exportBtn = screen.getByText('Export');
+    fireEvent.click(exportBtn);
 
-
-    expect(useResumeStore.getState().editorState.isDualViewMode).toBe(true);
-    expect(screen.getAllByText(/Version Française \(FR\)/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/English Version \(EN\)/i).length).toBeGreaterThan(0);
+    expect(screen.getByText('View PDF')).toBeDefined();
+    expect(screen.getByText('Download PDF')).toBeDefined();
   });
 });
-

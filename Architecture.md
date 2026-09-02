@@ -248,18 +248,25 @@ export interface IEditorState {
 
 ---
 
-## 5. Testing Standards, Quality Gates & Baseline Metrics
+## 8. Testing Standards & Current Baseline
 
-> **Testing Directive:** Single centralized testing authority for the repository. All test suites execute deterministically without flaky asynchronous timing or loose truth checks.
+- **Test Framework**: Vitest + Testing Library React + jsdom
+- **Test Baseline**: **18 passing tests across 4 test suites** (`pnpm test`)
+  - `__tests__/components/ResumeEditor.test.tsx`: Integration tests for header controls, sidebar language switcher, template registry, canvas rendering, and PDF view/download export options.
+  - `__tests__/store/useResumeStore.test.ts`: Unit tests for Zustand store mutators, item & section page breaks, language switching, version snapshot management, and undo/redo histories.
+  - `__tests__/utils/SmartResumeParser.test.ts`: Tests for HTML/text parsing, section detection, and date normalization.
+  - `__tests__/i18n/i18n.test.ts`: Exact 1:1 key parity and dynamic variable interpolation tests between EN and FR joint dictionaries.
 
-### Baseline Test Suites
+---
 
-| Test Suite | File Path | Assertions & Coverage | Target | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **Component Integration** | `__tests__/components/ResumeEditor.test.tsx` | Header, sidebar, canvas rendering, language toggle, template switching | 100% pass | ✅ Passing |
-| **i18n Dictionary** | `__tests__/i18n/i18n.test.ts` | Exact key parity between FR and EN, variable interpolation | 100% pass | ✅ Passing |
-| **Smart Parser** | `__tests__/utils/htmlParser.test.ts` | HTML, JSON Resume, and Plain text section extraction | 100% pass | ✅ Passing |
-| **Zustand Store** | `__tests__/store/useResumeStore.test.ts` | Mutators, versions, page breaks, catalog export/import, undo/redo, focus sync | 100% pass | ✅ Passing |
+## 9. Future Extension Table
+
+| Feature | Description | Insertion Point | Status |
+| :--- | :--- | :--- | :--- |
+| Single & Bilingual Toggle | Intuitive checkbox workflow with cross-language copy & smart target imports | `EditorHeader.tsx`, `WorkspaceCanvas.tsx`, `ImportHtmlModal.tsx` | Complete |
+| Smart Multi-Page Breaks | Dynamic offset calculation and PDF raster preservation | `PageBreakWrapper.tsx`, `PdfExporter.ts` | Complete |
+| Cloud Storage Sync | Remote backup of versions catalog via Firebase Firestore | `useResumeStore.ts` | Planned |
+| AI Bullet Enhancer | Integration with Gemini API for resume bullet impact scoring | `src/components/forms/` | Planned |
 
 ### Verification Command
 

@@ -16,8 +16,6 @@ import { initialFrenchResumeData, initialEnglishResumeData } from './defaultResu
 
 interface ResumeStoreState {
   resumeData: IResumeData;
-  frenchResumeData: IResumeData;
-  englishResumeData: IResumeData;
   editorState: IEditorState;
   undoHistory: IResumeData[];
   redoHistory: IResumeData[];
@@ -135,7 +133,7 @@ const initialEditorState: IEditorState = {
   editorTheme: 'dark',
   activeSection: null,
   focusedSource: null,
-  isDualViewMode: true,
+  isDualViewMode: false,
 };
 
 
@@ -144,11 +142,8 @@ export const useResumeStore = create<ResumeStoreState>()(
     (set, get) => {
       const commitDataUpdate = (nextData: IResumeData) => {
         const state = get();
-        const lang = state.editorState.currentLanguage;
         set({
           resumeData: nextData,
-          frenchResumeData: lang === 'fr' ? nextData : (state.frenchResumeData || initialFrenchResumeData),
-          englishResumeData: lang === 'en' ? nextData : (state.englishResumeData || initialEnglishResumeData),
           undoHistory: [state.resumeData, ...state.undoHistory].slice(0, MAX_HISTORY_STEPS),
           redoHistory: [],
         });
@@ -156,8 +151,6 @@ export const useResumeStore = create<ResumeStoreState>()(
 
       return {
         resumeData: initialEnglishResumeData,
-        frenchResumeData: initialFrenchResumeData,
-        englishResumeData: initialEnglishResumeData,
         editorState: initialEditorState,
         savedVersions: [],
         undoHistory: [],
@@ -744,15 +737,7 @@ export const useResumeStore = create<ResumeStoreState>()(
 
         // Editor State
         setResumeData: (data) => {
-          const state = get();
-          const lang = state.editorState.currentLanguage;
-          set({
-            resumeData: data,
-            frenchResumeData: lang === 'fr' ? data : (state.frenchResumeData || initialFrenchResumeData),
-            englishResumeData: lang === 'en' ? data : (state.englishResumeData || initialEnglishResumeData),
-            undoHistory: [state.resumeData, ...state.undoHistory].slice(0, MAX_HISTORY_STEPS),
-            redoHistory: [],
-          });
+          commitDataUpdate(data);
         },
 
         setTemplate: (templateId) => {
@@ -801,21 +786,9 @@ export const useResumeStore = create<ResumeStoreState>()(
         },
 
         setLanguage: (lang) => {
-          const state = get();
-          if (state.editorState.currentLanguage === lang) return;
-
-          const prevLang = state.editorState.currentLanguage;
-          const currentData = state.resumeData;
-          const frData = prevLang === 'fr' ? currentData : (state.frenchResumeData || initialFrenchResumeData);
-          const enData = prevLang === 'en' ? currentData : (state.englishResumeData || initialEnglishResumeData);
-          const targetData = lang === 'fr' ? frData : enData;
-
-          set({
-            resumeData: structuredClone(targetData),
-            frenchResumeData: frData,
-            englishResumeData: enData,
+          set((state) => ({
             editorState: { ...state.editorState, currentLanguage: lang },
-          });
+          }));
         },
 
         setEditorTheme: (theme) => {
@@ -865,9 +838,6 @@ export const useResumeStore = create<ResumeStoreState>()(
             updatedAt: nowFormatted,
             isDraft: false,
             resumeData: structuredClone(state.resumeData),
-            frenchResumeData: structuredClone(state.frenchResumeData || state.resumeData),
-            englishResumeData: structuredClone(state.englishResumeData || state.resumeData),
-            savedLanguages: ['en', 'fr'],
             editorState: structuredClone(state.editorState),
           };
           set({
@@ -907,8 +877,6 @@ export const useResumeStore = create<ResumeStoreState>()(
 
           set({
             resumeData: structuredClone(target.resumeData),
-            frenchResumeData: target.frenchResumeData ? structuredClone(target.frenchResumeData) : state.frenchResumeData,
-            englishResumeData: target.englishResumeData ? structuredClone(target.englishResumeData) : state.englishResumeData,
             editorState: structuredClone(target.editorState),
             undoHistory: [state.resumeData, ...state.undoHistory].slice(0, MAX_HISTORY_STEPS),
             redoHistory: [],
@@ -1019,8 +987,6 @@ export const useResumeStore = create<ResumeStoreState>()(
 
           set({
             resumeData: structuredClone(defaultData),
-            frenchResumeData: lang === 'fr' ? structuredClone(defaultData) : state.frenchResumeData,
-            englishResumeData: lang === 'en' ? structuredClone(defaultData) : state.englishResumeData,
             undoHistory: [state.resumeData, ...state.undoHistory].slice(0, MAX_HISTORY_STEPS),
             redoHistory: [],
           });
@@ -1032,8 +998,6 @@ export const useResumeStore = create<ResumeStoreState>()(
       storage: createJSONStorage(() => (typeof window !== 'undefined' ? window.localStorage : (null as any))),
       partialize: (state) => ({
         resumeData: state.resumeData,
-        frenchResumeData: state.frenchResumeData,
-        englishResumeData: state.englishResumeData,
         editorState: state.editorState,
         savedVersions: state.savedVersions,
       }),
