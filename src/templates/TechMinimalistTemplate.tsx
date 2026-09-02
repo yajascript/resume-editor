@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ITemplateProps } from '@/types';
-import { EditableText } from '@/components/editor/EditableText';
+import { EditableText, PageBreakWrapper } from '@/components/editor';
 import { translate } from '@/i18n';
 import { useResumeStore } from '@/store';
 import { Terminal, Mail, MapPin, Linkedin } from 'lucide-react';
@@ -12,7 +12,7 @@ export const TechMinimalistTemplate: React.FC<ITemplateProps> = ({
   onFieldChange,
   accentColor = '#0f172a',
 }) => {
-  const { editorState, setActiveSection } = useResumeStore();
+  const { editorState, setActiveSection, toggleItemPageBreak, toggleSectionPageBreak } = useResumeStore();
   const lang = editorState.currentLanguage;
   const activeSec = editorState.activeSection;
   const {
@@ -24,13 +24,15 @@ export const TechMinimalistTemplate: React.FC<ITemplateProps> = ({
     educationList,
     projectsList,
     experienceList,
+    customSectionsList = [],
     sectionVisibility,
+    sectionPageBreaks = {},
   } = resumeData;
 
   return (
     <div
       id="resume-sheet"
-      className="w-full bg-white text-slate-900 p-8 flex flex-col gap-5 shadow-paper print:shadow-none min-h-[1056px] text-[11px] leading-relaxed select-text"
+      className="w-full bg-white text-slate-900 p-8 flex flex-col gap-5 shadow-paper print:shadow-none min-h-full h-full text-[11px] leading-relaxed select-text flex-1"
       style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
     >
       {/* Tech Top Header */}
@@ -126,150 +128,192 @@ export const TechMinimalistTemplate: React.FC<ITemplateProps> = ({
 
       {/* Profile */}
       {sectionVisibility.profile !== false && profileSummary && (
-        <section
-          id="preview-section-summary"
-          onClick={() => setActiveSection('summary', 'preview')}
-          className={`cursor-pointer rounded-xl p-2 -m-2 transition-all ${
-            activeSec === 'summary' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : 'hover:ring-1 hover:ring-emerald-300/40'
-          }`}
+        <PageBreakWrapper
+          pageBreakBefore={sectionPageBreaks.profile}
+          onTogglePageBreak={() => toggleSectionPageBreak('profile')}
+          isHeader
         >
-          <h2 className="text-[11px] font-bold uppercase text-slate-900 border-b border-slate-200 pb-1 mb-1.5">
-            {'>'} {translate(lang, 'resume.sections.profile')}
-          </h2>
-          <p className="text-[10px] text-slate-700 leading-relaxed text-justify">
-            <EditableText
-              multiline
-              value={profileSummary}
-              onSave={(val) => onFieldChange('profileSummary', val)}
-            />
-          </p>
-        </section>
+          <section
+            id="preview-section-summary"
+            onClick={() => setActiveSection('summary', 'preview')}
+            className={`cursor-pointer rounded-xl p-2 -m-2 transition-all ${
+              activeSec === 'summary' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : 'hover:ring-1 hover:ring-emerald-300/40'
+            }`}
+          >
+            <h2 className="text-[11px] font-bold uppercase text-slate-900 border-b border-slate-200 pb-1 mb-1.5">
+              {'>'} {translate(lang, 'resume.sections.profile')}
+            </h2>
+            <p className="text-[10px] text-slate-700 leading-relaxed text-justify">
+              <EditableText
+                multiline
+                value={profileSummary}
+                onSave={(val) => onFieldChange('profileSummary', val)}
+              />
+            </p>
+          </section>
+        </PageBreakWrapper>
       )}
 
       {/* Experience */}
       {sectionVisibility.experience !== false && experienceList.length > 0 && (
-        <section
-          id="preview-section-experience"
-          onClick={() => setActiveSection('experience', 'preview')}
-          className={`cursor-pointer rounded-xl p-2 -m-2 transition-all ${
-            activeSec === 'experience' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : 'hover:ring-1 hover:ring-emerald-300/40'
-          }`}
+        <PageBreakWrapper
+          pageBreakBefore={sectionPageBreaks.experience}
+          onTogglePageBreak={() => toggleSectionPageBreak('experience')}
+          isHeader
         >
-          <h2 className="text-[11px] font-bold uppercase text-slate-900 border-b border-slate-200 pb-1 mb-2.5">
-            {'>'} {translate(lang, 'resume.sections.experience')}
-          </h2>
-          <div className="flex flex-col gap-3.5">
-            {experienceList.map((exp, index) => (
-              <div key={exp.identifier || index}>
-                <div className="flex justify-between items-baseline">
-                  <div className="font-bold text-[11px] text-slate-900">
-                    <EditableText
-                      value={exp.jobTitle}
-                      onSave={(val) => {
-                        const updated = [...experienceList];
-                        updated[index] = { ...exp, jobTitle: val };
-                        onFieldChange('experienceList', updated);
-                      }}
-                    />
-                    <span className="text-emerald-700 font-semibold ml-1.5">
-                      @{exp.companyName}
-                    </span>
+          <section
+            id="preview-section-experience"
+            onClick={() => setActiveSection('experience', 'preview')}
+            className={`cursor-pointer rounded-xl p-2 -m-2 transition-all ${
+              activeSec === 'experience' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : 'hover:ring-1 hover:ring-emerald-300/40'
+            }`}
+          >
+            <h2 className="text-[11px] font-bold uppercase text-slate-900 border-b border-slate-200 pb-1 mb-2.5">
+              {'>'} {translate(lang, 'resume.sections.experience')}
+            </h2>
+            <div className="flex flex-col gap-3.5">
+              {experienceList.map((exp, index) => (
+                <PageBreakWrapper
+                  key={exp.identifier || index}
+                  pageBreakBefore={exp.pageBreakBefore}
+                  onTogglePageBreak={() => toggleItemPageBreak('experience', exp.identifier)}
+                >
+                  <div>
+                    <div className="flex justify-between items-baseline">
+                      <div className="font-bold text-[11px] text-slate-900">
+                        <EditableText
+                          value={exp.jobTitle}
+                          onSave={(val) => {
+                            const updated = [...experienceList];
+                            updated[index] = { ...exp, jobTitle: val };
+                            onFieldChange('experienceList', updated);
+                          }}
+                        />
+                        <span className="text-emerald-700 font-semibold ml-1.5">
+                          @{exp.companyName}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-500">
+                        [{exp.startDate} - {exp.endDate || translate(lang, 'resume.sections.present')}]
+                      </span>
+                    </div>
+                    <ul className="list-none pl-2 mt-1 space-y-0.5">
+                      {exp.bulletPoints.map((bullet, bulletIdx) => (
+                        <li key={bulletIdx} className="text-[10px] text-slate-700 leading-snug flex items-start gap-1.5 text-justify">
+                          <span className="text-emerald-600 font-bold shrink-0">$</span>
+                          <EditableText
+                            multiline
+                            value={bullet}
+                            onSave={(val) => {
+                              const updated = [...experienceList];
+                              const bullets = [...exp.bulletPoints];
+                              bullets[bulletIdx] = val;
+                              updated[index] = { ...exp, bulletPoints: bullets };
+                              onFieldChange('experienceList', updated);
+                            }}
+                          />
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <span className="text-[10px] text-slate-500">
-                    [{exp.startDate} - {exp.endDate || translate(lang, 'resume.sections.present')}]
-                  </span>
-                </div>
-                <ul className="list-none pl-2 mt-1 space-y-0.5">
-                  {exp.bulletPoints.map((bullet, bulletIdx) => (
-                    <li key={bulletIdx} className="text-[10px] text-slate-700 leading-snug flex items-start gap-1.5 text-justify">
-                      <span className="text-emerald-600 font-bold shrink-0">$</span>
-                      <EditableText
-                        multiline
-                        value={bullet}
-                        onSave={(val) => {
-                          const updated = [...experienceList];
-                          const bullets = [...exp.bulletPoints];
-                          bullets[bulletIdx] = val;
-                          updated[index] = { ...exp, bulletPoints: bullets };
-                          onFieldChange('experienceList', updated);
-                        }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
+                </PageBreakWrapper>
+              ))}
+            </div>
+          </section>
+        </PageBreakWrapper>
       )}
 
       {/* Projects */}
       {sectionVisibility.projects !== false && projectsList.length > 0 && (
-        <section
-          id="preview-section-projects"
-          onClick={() => setActiveSection('projects', 'preview')}
-          className={`cursor-pointer rounded-xl p-2 -m-2 transition-all ${
-            activeSec === 'projects' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : 'hover:ring-1 hover:ring-emerald-300/40'
-          }`}
+        <PageBreakWrapper
+          pageBreakBefore={sectionPageBreaks.projects}
+          onTogglePageBreak={() => toggleSectionPageBreak('projects')}
+          isHeader
         >
-          <h2 className="text-[11px] font-bold uppercase text-slate-900 border-b border-slate-200 pb-1 mb-2">
-            {'>'} {translate(lang, 'resume.sections.projects')}
-          </h2>
-          <div className="flex flex-col gap-2.5">
-            {projectsList.map((proj, index) => (
-              <div key={proj.identifier || index}>
-                <div className="font-bold text-[10.5px] text-slate-900">
-                  <EditableText
-                    value={proj.projectTitle}
-                    onSave={(val) => {
-                      const updated = [...projectsList];
-                      updated[index] = { ...proj, projectTitle: val };
-                      onFieldChange('projectsList', updated);
-                    }}
-                  />
-                  {proj.projectSubtitle && (
-                    <span className="text-slate-500 font-normal ml-1">
-                      ({proj.projectSubtitle})
-                    </span>
-                  )}
-                </div>
-                {proj.bulletPoints.map((b, bIdx) => (
-                  <p key={bIdx} className="text-[10px] text-slate-700 pl-2 mt-0.5 text-justify">
-                    - {b}
-                  </p>
-                ))}
-              </div>
-            ))}
-          </div>
-        </section>
+          <section
+            id="preview-section-projects"
+            onClick={() => setActiveSection('projects', 'preview')}
+            className={`cursor-pointer rounded-xl p-2 -m-2 transition-all ${
+              activeSec === 'projects' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : 'hover:ring-1 hover:ring-emerald-300/40'
+            }`}
+          >
+            <h2 className="text-[11px] font-bold uppercase text-slate-900 border-b border-slate-200 pb-1 mb-2">
+              {'>'} {translate(lang, 'resume.sections.projects')}
+            </h2>
+            <div className="flex flex-col gap-2.5">
+              {projectsList.map((proj, index) => (
+                <PageBreakWrapper
+                  key={proj.identifier || index}
+                  pageBreakBefore={proj.pageBreakBefore}
+                  onTogglePageBreak={() => toggleItemPageBreak('projects', proj.identifier)}
+                >
+                  <div>
+                    <div className="font-bold text-[10.5px] text-slate-900">
+                      <EditableText
+                        value={proj.projectTitle}
+                        onSave={(val) => {
+                          const updated = [...projectsList];
+                          updated[index] = { ...proj, projectTitle: val };
+                          onFieldChange('projectsList', updated);
+                        }}
+                      />
+                      {proj.projectSubtitle && (
+                        <span className="text-slate-500 font-normal ml-1">
+                          ({proj.projectSubtitle})
+                        </span>
+                      )}
+                    </div>
+                    {proj.bulletPoints.map((b, bIdx) => (
+                      <p key={bIdx} className="text-[10px] text-slate-700 pl-2 mt-0.5 text-justify">
+                        - {b}
+                      </p>
+                    ))}
+                  </div>
+                </PageBreakWrapper>
+              ))}
+            </div>
+          </section>
+        </PageBreakWrapper>
       )}
 
       {/* Education */}
       {sectionVisibility.education !== false && educationList.length > 0 && (
-        <section
-          id="preview-section-education"
-          onClick={() => setActiveSection('education', 'preview')}
-          className={`cursor-pointer rounded-xl p-2 -m-2 transition-all ${
-            activeSec === 'education' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : 'hover:ring-1 hover:ring-emerald-300/40'
-          }`}
+        <PageBreakWrapper
+          pageBreakBefore={sectionPageBreaks.education}
+          onTogglePageBreak={() => toggleSectionPageBreak('education')}
+          isHeader
         >
-          <h2 className="text-[11px] font-bold uppercase text-slate-900 border-b border-slate-200 pb-1 mb-2">
-            {'>'} {translate(lang, 'resume.sections.education')}
-          </h2>
-          <div className="flex flex-col gap-1.5">
-            {educationList.map((edu, index) => (
-              <div key={edu.identifier || index} className="flex justify-between items-baseline text-[10px]">
-                <div>
-                  <span className="font-bold text-slate-900">{edu.degreeName}</span>
-                  <span className="text-slate-600 ml-1.5">[{edu.institutionName}]</span>
-                </div>
-                <span className="text-slate-500">
-                  {edu.startDate} - {edu.endDate}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
+          <section
+            id="preview-section-education"
+            onClick={() => setActiveSection('education', 'preview')}
+            className={`cursor-pointer rounded-xl p-2 -m-2 transition-all ${
+              activeSec === 'education' ? 'ring-2 ring-emerald-500 bg-emerald-50/20' : 'hover:ring-1 hover:ring-emerald-300/40'
+            }`}
+          >
+            <h2 className="text-[11px] font-bold uppercase text-slate-900 border-b border-slate-200 pb-1 mb-2">
+              {'>'} {translate(lang, 'resume.sections.education')}
+            </h2>
+            <div className="flex flex-col gap-1.5">
+              {educationList.map((edu, index) => (
+                <PageBreakWrapper
+                  key={edu.identifier || index}
+                  pageBreakBefore={edu.pageBreakBefore}
+                  onTogglePageBreak={() => toggleItemPageBreak('education', edu.identifier)}
+                >
+                  <div className="flex justify-between items-baseline text-[10px]">
+                    <div>
+                      <span className="font-bold text-slate-900">{edu.degreeName}</span>
+                      <span className="text-slate-600 ml-1.5">[{edu.institutionName}]</span>
+                    </div>
+                    <span className="text-slate-500">
+                      {edu.startDate} - {edu.endDate}
+                    </span>
+                  </div>
+                </PageBreakWrapper>
+              ))}
+            </div>
+          </section>
+        </PageBreakWrapper>
       )}
     </div>
   );

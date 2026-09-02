@@ -2,7 +2,7 @@
 
 > **Status:** Active & Canonical  
 > **Source Repository:** `/Users/ajay/Development/resume-editor`  
-> **Last Updated:** August 31, 2026  
+> **Last Updated:** September 1, 2026  
 
 ---
 
@@ -13,8 +13,8 @@
 | **Framework** | Next.js 15 (App Router) | Static site generation, client-side hydration, zero serverless compute overhead |
 | **Language** | TypeScript 5.7+ | Strict mode, full-word descriptive naming, strict 1:1 single-entity file isolation |
 | **Styling** | Tailwind CSS 3.4 + CSS Modules | Custom paper shadows, print media queries, glassmorphic floating toolbars |
-| **State Management** | Zustand 5.0 + Persist | `localStorage` persistence with snapshot-based Undo/Redo history stack, dual-language persistence |
-| **Document Exporters** | `docx`, `jspdf`, `html-to-image`, `file-saver` | 100% client-side compilation for Word (.docx), Multi-Page Sliced Vector/Raster PDF, High-Res PNG/JPEG, JSON |
+| **State Management** | Zustand 5.0 + Persist | `localStorage` persistence with snapshot-based Undo/Redo history stack, dual-language persistence, page break toggles |
+| **Document Exporters** | `docx`, `jspdf`, `html-to-image`, `file-saver` | 100% client-side compilation for Word (.docx), Multi-Page Sliced Vector/Raster PDF with filter exclusion, High-Res PNG/JPEG, JSON |
 | **Localization** | Joint `i18n.ts` Dictionary | Dynamic variable interpolation for FR (French) and EN (English), zero hardcoded fallbacks |
 | **Deployment Target** | Vercel (Hobby Free Tier) | Zero backend compute, 100% client-side execution, completely free and private per user |
 
@@ -43,13 +43,13 @@ resume-editor/
 │   ├── types/
 │   │   ├── index.ts                 # Types barrel export
 │   │   ├── IContactInformation.ts   # Contact fields contract
-│   │   ├── IExperienceItem.ts       # Work experience item contract
-│   │   ├── IEducationItem.ts        # Education degree item contract
-│   │   ├── IProjectItem.ts          # Project item contract
+│   │   ├── IExperienceItem.ts       # Work experience item contract (with pageBreakBefore)
+│   │   ├── IEducationItem.ts        # Education degree item contract (with pageBreakBefore)
+│   │   ├── IProjectItem.ts          # Project item contract (with pageBreakBefore)
 │   │   ├── ICertificationItem.ts    # Certification & license contract
-│   │   ├── ICustomSectionItem.ts    # Dynamic section item contract
-│   │   ├── ICustomSection.ts        # Custom section container contract
-│   │   ├── IResumeData.ts           # Universal normalized resume schema
+│   │   ├── ICustomSectionItem.ts    # Dynamic section item contract (with pageBreakBefore)
+│   │   ├── ICustomSection.ts        # Custom section container contract (with pageBreakBefore)
+│   │   ├── IResumeData.ts           # Universal normalized resume schema (with sectionPageBreaks)
 │   │   ├── ISavedVersion.ts         # Saved snapshot version contract
 │   │   ├── ITemplateProps.ts        # Template component props contract
 │   │   ├── ITemplate.ts             # Template registry metadata contract
@@ -57,7 +57,7 @@ resume-editor/
 │   │   └── IExportOptions.ts        # Document export options
 │   ├── store/
 │   │   ├── index.ts                 # Store barrel export
-│   │   ├── useResumeStore.ts        # Zustand store with mutators, dual language persistence & bi-directional focus
+│   │   ├── useResumeStore.ts        # Zustand store with mutators, page break mutators, dual language persistence & bi-directional focus
 │   │   └── defaultResumeData.ts     # Prepopulated generic placeholder FR & EN CV datasets
 │   ├── i18n/
 │   │   ├── index.ts                 # i18n barrel export
@@ -65,11 +65,11 @@ resume-editor/
 │   ├── templates/
 │   │   ├── index.ts                 # Templates barrel export
 │   │   ├── TemplateRegistry.ts      # Multi-template catalog & registry
-│   │   ├── SidebarNavyTemplate.tsx  # Exact 1:1 reproduction of template1.html with click-to-focus
-│   │   ├── MinimalCleanTemplate.tsx # Single-column minimalist layout with click-to-focus
-│   │   ├── ModernSplitTemplate.tsx  # Top header banner + 2-column body with click-to-focus
-│   │   ├── ExecutiveClassicTemplate.tsx # Traditional serif executive layout with click-to-focus
-│   │   └── TechMinimalistTemplate.tsx   # Software engineer streamlined layout with click-to-focus
+│   │   ├── SidebarNavyTemplate.tsx  # Full-height stretching multi-page sidebar layout with click-to-focus and page breaks
+│   │   ├── MinimalCleanTemplate.tsx # Single-column minimalist layout with click-to-focus and page breaks
+│   │   ├── ModernSplitTemplate.tsx  # Top header banner + 2-column body with click-to-focus and page breaks
+│   │   ├── ExecutiveClassicTemplate.tsx # Traditional serif executive layout with click-to-focus and page breaks
+│   │   └── TechMinimalistTemplate.tsx   # Software engineer streamlined layout with click-to-focus and page breaks
 │   ├── components/
 │   │   ├── cards/
 │   │   │   ├── index.ts             # Cards barrel export
@@ -82,30 +82,31 @@ resume-editor/
 │   │   │   └── TemplateSelectorModal.tsx # Visual thumbnail template picker
 │   │   ├── editor/
 │   │   │   ├── index.ts             # Editor barrel export
-│   │   │   └── EditableText.tsx     # Inline WYSIWYG contenteditable binding
+│   │   │   ├── EditableText.tsx     # Inline WYSIWYG contenteditable binding
+│   │   │   └── PageBreakWrapper.tsx # Dynamic pagination spacer, visual indicators & hover quick-actions
 │   │   ├── forms/
 │   │   │   ├── index.ts             # Forms barrel export
 │   │   │   ├── ContactForm.tsx      # Contact details form
 │   │   │   ├── SummaryForm.tsx      # Summary form with character counter
-│   │   │   ├── ExperienceForm.tsx   # Ergonomic expandable cards with fast paste & keyboard shortcuts
-│   │   │   ├── EducationForm.tsx    # Ergonomic expandable cards with fast paste
+│   │   │   ├── ExperienceForm.tsx   # Expandable cards with page break toggles & fast paste
+│   │   │   ├── EducationForm.tsx    # Expandable cards with page break toggles & fast paste
 │   │   │   ├── SkillsForm.tsx       # Skills tags manager
 │   │   │   ├── LanguagesForm.tsx    # Languages manager
 │   │   │   ├── CertificationsForm.tsx # Licenses & certifications
-│   │   │   ├── ProjectsForm.tsx     # Featured projects with expandable cards & fast paste
-│   │   │   ├── CustomSectionsForm.tsx # Custom user-defined sections
-│   │   │   ├── SectionOrderForm.tsx # Drag/order & visibility toggles
+│   │   │   ├── ProjectsForm.tsx     # Featured projects with page break toggles & fast paste
+│   │   │   ├── CustomSectionsForm.tsx # Custom user-defined sections with page break toggles
+│   │   │   ├── SectionOrderForm.tsx # Drag/order, visibility toggles & section-level page breaks
 │   │   │   └── AppearanceForm.tsx   # Template, accent color & font selector
 │   │   └── layout/
 │   │       ├── index.ts             # Layout barrel export
 │   │       ├── EditorHeader.tsx     # Top header bar (actions, dual view toggle, language, theme)
 │   │       ├── EditorSidebar.tsx    # Accordion control panel with auto-focus & scrolling
-│   │       └── WorkspaceCanvas.tsx  # Zoomable A4/Letter paper canvas supporting side-by-side Dual View
+│   │       └── WorkspaceCanvas.tsx  # Dynamic multi-page paper canvas with visual page dividers and 100% banner scaling
 │   ├── exporters/
 │   │   ├── index.ts                 # Exporters barrel export
 │   │   ├── DocxExporter.ts          # Native OpenXML .docx generation
-│   │   ├── PdfExporter.ts           # Client-side PDF export & native print
-│   │   ├── ImageExporter.ts         # High-DPI PNG and JPEG exporter
+│   │   ├── PdfExporter.ts           # Client-side PDF export with capture filter & vector print
+│   │   ├── ImageExporter.ts         # High-DPI PNG and JPEG exporter with capture filter
 │   │   └── JsonExporter.ts          # JSON resume backup exporter and loader
 │   └── utils/
 │       ├── index.ts                 # Utilities barrel export
@@ -114,7 +115,7 @@ resume-editor/
 │       └── htmlParser.ts            # Smart HTML, JSON & text section detector
 └── __tests__/
     ├── components/                  # ResumeEditor integration tests
-    ├── store/                       # Store mutations, versions, & undo/redo unit tests
+    ├── store/                       # Store mutations, versions, page breaks & undo/redo unit tests
     ├── utils/                       # Smart parser & date helper unit tests
     └── i18n/                        # Dictionary completeness & interpolation tests
 ```
@@ -123,47 +124,35 @@ resume-editor/
 
 ## 3. ASCII Visual Diagrams
 
-### Component Architecture & Dual View / Focus Flow
+### Multi-Page Full-Height Scaling & Dynamic Page Break Architecture
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                             Next.js App Shell                              │
-│                                (src/app)                                   │
+│                    WorkspaceCanvas (ResumePaper Container)                 │
+│      • Computes totalPages = Math.max(1, Math.ceil(contentHeight/pagePx))  │
+│      • Sets minHeight = totalPages * 11in (e.g. 22in for 2 pages)          │
+│      • Renders visual dashed Page Boundary Dividers on screen              │
 └─────────────────────────────────────┬──────────────────────────────────────┘
                                       │
                                       ▼
 ┌────────────────────────────────────────────────────────────────────────────┐
-│                                EditorHeader                                │
-│   • Versions Dialog  • Dual View (EN+FR)  • Undo/Redo  • Export  • Theme   │
+│              SidebarNavyTemplate (or Any Two-Column Layout)                │
+│  ┌───────────────────────────────┐ ┌────────────────────────────────────┐  │
+│  │      <aside> Left Banner      │ │         <main> Main Body           │  │
+│  │  • items-stretch              │ │  • PageBreakWrapper on Sections    │  │
+│  │  • min-h-full (Spans 100% of  │ │  • PageBreakWrapper on Items       │  │
+│  │    Page 1 AND Page 2 to base) │ │  • Computes top page spacer dynamically│
+│  │  • Zero blank white boxes     │ │  • CSS: break-before: page         │  │
+│  └───────────────────────────────┘ └────────────────────────────────────┘  │
 └─────────────────────────────────────┬──────────────────────────────────────┘
                                       │
                  ┌────────────────────┴────────────────────┐
                  ▼                                         ▼
 ┌─────────────────────────────────┐       ┌─────────────────────────────────┐
-│          EditorSidebar          │       │         WorkspaceCanvas         │
-│  • Content Accordions (Cards)   │       │  • Zoom Controls (50% - 200%)   │
-│  • Quick Language Switcher Bar  │ ◄───► │  • Side-by-Side Dual View (FR+EN)│
-│  • Highlight Active Accordion   │       │  • Interactive Click-to-Focus   │
-│  • Fast Paste Multiline Bullets │       │  • Auto-Scroll on Sidebar Focus │
-└────────────────┬────────────────┘       └────────────────┬────────────────┘
-                 │                                         │
-                 │   Bidirectional State Sync (Zustand)    │
-                 │  `activeSection` & `focusedSource`      │
-                 └────────────────────┬────────────────────┘
-                                      ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│                              useResumeStore                                │
-│      (Persisted via LocalStorage • Max 25 Snapshots History Stack)         │
-│      • Dual Language State: `frenchResumeData` & `englishResumeData`       │
-│      • Version Management: duplicate, exportCatalog, importCatalog         │
-│      • Completely isolated per client, 100% Free, Zero Backend Cost        │
-└─────────────────────────────────────┬──────────────────────────────────────┘
-                                      │
-            ┌─────────────────────────┼─────────────────────────┐
-            ▼                         ▼                         ▼
-┌───────────────────────┐ ┌───────────────────────┐ ┌───────────────────────┐
-│     DocxExporter      │ │      PdfExporter      │ │     ImageExporter     │
-│ Native OpenXML .docx  │ │  jsPDF + Vector Print │ │ High-DPI PNG & JPEG   │
-└───────────────────────┘ └───────────────────────┘ └───────────────────────┘
+│     Screen Preview & Forms      │       │     PdfExporter / Print         │
+│  • Hover Scissors Quick-Action  │       │  • captureFilter strips overlay │
+│  • Sidebar 📄 Break Toggles     │       │    buttons & guidelines         │
+│  • Real-time Spacing Reflow     │       │  • Clean 2-Page Slicing         │
+└─────────────────────────────────┘       └─────────────────────────────────┘
 ```
 
 ---
@@ -201,6 +190,7 @@ export interface IResumeData {
     endDate: string;
     specialization?: string;
     bulletPoints?: string[];
+    pageBreakBefore?: boolean;
   }>;
   projectsList: Array<{
     identifier: string;
@@ -210,6 +200,7 @@ export interface IResumeData {
     startDate?: string;
     endDate?: string;
     bulletPoints: string[];
+    pageBreakBefore?: boolean;
   }>;
   experienceList: Array<{
     identifier: string;
@@ -220,20 +211,24 @@ export interface IResumeData {
     endDate: string;
     isCurrentRole: boolean;
     bulletPoints: string[];
+    pageBreakBefore?: boolean;
   }>;
   customSectionsList: Array<{
     identifier: string;
     sectionTitle: string;
+    pageBreakBefore?: boolean;
     items: Array<{
       identifier: string;
       itemTitle: string;
       itemSubtitle?: string;
       dateRange?: string;
       bulletPoints: string[];
+      pageBreakBefore?: boolean;
     }>;
   }>;
   sectionOrder: string[];
   sectionVisibility: Record<string, boolean>;
+  sectionPageBreaks?: Record<string, boolean>;
 }
 
 export interface IEditorState {
@@ -264,10 +259,11 @@ export interface IEditorState {
 | **Component Integration** | `__tests__/components/ResumeEditor.test.tsx` | Header, sidebar, canvas rendering, language toggle, template switching | 100% pass | ✅ Passing |
 | **i18n Dictionary** | `__tests__/i18n/i18n.test.ts` | Exact key parity between FR and EN, variable interpolation | 100% pass | ✅ Passing |
 | **Smart Parser** | `__tests__/utils/htmlParser.test.ts` | HTML, JSON Resume, and Plain text section extraction | 100% pass | ✅ Passing |
-| **Zustand Store** | `__tests__/store/useResumeStore.test.ts` | Mutators, versions, catalog export/import, undo/redo, focus sync | 100% pass | ✅ Passing |
+| **Zustand Store** | `__tests__/store/useResumeStore.test.ts` | Mutators, versions, page breaks, catalog export/import, undo/redo, focus sync | 100% pass | ✅ Passing |
 
 ### Verification Command
 
 ```bash
 pnpm test
+pnpm run build
 ```

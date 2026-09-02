@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useResumeStore } from '@/store';
 import { translate } from '@/i18n';
-import { Plus, Trash2, PlusCircle, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, PlusCircle, X, ChevronUp, ChevronDown, Scissors } from 'lucide-react';
 
 export const CustomSectionsForm: React.FC = () => {
   const {
@@ -16,6 +16,7 @@ export const CustomSectionsForm: React.FC = () => {
     updateCustomSectionItem,
     removeCustomSectionItem,
     reorderCustomSectionItem,
+    toggleItemPageBreak,
     editorState,
   } = useResumeStore();
   const { customSectionsList } = resumeData;
@@ -68,6 +69,18 @@ export const CustomSectionsForm: React.FC = () => {
               <div className="flex items-center gap-0.5 shrink-0">
                 <button
                   type="button"
+                  onClick={() => toggleItemPageBreak('custom', sec.identifier)}
+                  title={translate(lang, 'pageBreak.toggleBeforeSection')}
+                  className={`p-1 rounded transition-colors ${
+                    sec.pageBreakBefore
+                      ? 'bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 font-bold'
+                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+                  }`}
+                >
+                  <Scissors className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
                   disabled={secIndex === 0}
                   onClick={() => reorderCustomSections(secIndex, secIndex - 1)}
                   className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-20 transition-colors"
@@ -113,6 +126,18 @@ export const CustomSectionsForm: React.FC = () => {
                       className="grow px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
                     />
                     <div className="flex items-center gap-0.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => toggleItemPageBreak('custom', sec.identifier, item.identifier)}
+                        title={translate(lang, 'pageBreak.toggleBefore')}
+                        className={`p-1 rounded transition-colors ${
+                          item.pageBreakBefore
+                            ? 'bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 font-bold'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <Scissors className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         type="button"
                         disabled={itemIndex === 0}

@@ -3,11 +3,11 @@
 import React from 'react';
 import { useResumeStore } from '@/store';
 import { translate } from '@/i18n';
-import { Eye, EyeOff, GripVertical } from 'lucide-react';
+import { Eye, EyeOff, GripVertical, Scissors } from 'lucide-react';
 
 export const SectionOrderForm: React.FC = () => {
-  const { resumeData, toggleSectionVisibility, reorderSections, editorState } = useResumeStore();
-  const { sectionOrder, sectionVisibility } = resumeData;
+  const { resumeData, toggleSectionVisibility, toggleSectionPageBreak, reorderSections, editorState } = useResumeStore();
+  const { sectionOrder, sectionVisibility, sectionPageBreaks = {} } = resumeData;
   const lang = editorState.currentLanguage;
 
   const getSectionTitle = (key: string): string => {
@@ -49,6 +49,7 @@ export const SectionOrderForm: React.FC = () => {
       <div className="flex flex-col gap-2">
         {sectionOrder.map((sectionKey, index) => {
           const isVisible = sectionVisibility[sectionKey] ?? true;
+          const isPageBreak = !!sectionPageBreaks[sectionKey];
           return (
             <div
               key={sectionKey}
@@ -63,9 +64,27 @@ export const SectionOrderForm: React.FC = () => {
                 <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                   {getSectionTitle(sectionKey)}
                 </span>
+                {isPageBreak && (
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800 shrink-0">
+                    📄 Break
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => toggleSectionPageBreak(sectionKey)}
+                  className={`p-1.5 rounded text-xs flex items-center gap-1 transition-all ${
+                    isPageBreak
+                      ? 'text-blue-700 bg-blue-100 dark:bg-blue-900/60 dark:text-blue-300 font-bold'
+                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                  title={translate(lang, 'pageBreak.toggleBeforeSection')}
+                >
+                  <Scissors className="w-3.5 h-3.5" />
+                </button>
+
                 <button
                   type="button"
                   onClick={() => toggleSectionVisibility(sectionKey)}

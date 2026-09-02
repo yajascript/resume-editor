@@ -7,4 +7,5 @@ export interface IEducationItem {
   endDate: string;
   specialization?: string;
   bulletPoints?: string[];
+  pageBreakBefore?: boolean;
 }

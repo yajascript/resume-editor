@@ -53,10 +53,15 @@
     print-color-adjust: exact !important;
   }
 
-  header,
-  aside,
+  header:not([id^="preview-section-"]),
+  .editor-sidebar,
   .no-print,
-  button {
+  [data-pagebreak-ui="true"],
+  .pagebreak-ui-control {
+    display: none !important;
+  }
+
+  [data-page-break-spacer="true"] {
     display: none !important;
   }
 
@@ -72,7 +77,7 @@
     box-shadow: none !important;
     outline: none !important;
     width: 100% !important;
-    min-height: 100vh !important;
+    min-height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
   }
@@ -81,5 +86,15 @@
     outline: none !important;
     box-shadow: none !important;
   }
-}
 
+  .break-before-page,
+  .page-break-before-always {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  .break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

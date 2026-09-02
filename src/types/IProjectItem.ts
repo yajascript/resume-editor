@@ -6,4 +6,6 @@ export interface IProjectItem {
   startDate?: string;
   endDate?: string;
   bulletPoints: string[];
+  pageBreakBefore?: boolean;
 }
+

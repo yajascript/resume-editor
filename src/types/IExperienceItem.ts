@@ -7,4 +7,5 @@ export interface IExperienceItem {
   endDate: string;
   isCurrentRole: boolean;
   bulletPoints: string[];
+  pageBreakBefore?: boolean;
 }

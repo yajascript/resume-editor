@@ -18,6 +18,7 @@ import {
   Calendar,
   MapPin,
   BookOpen,
+  Scissors,
 } from 'lucide-react';
 
 export const EducationForm: React.FC = () => {
@@ -28,6 +29,7 @@ export const EducationForm: React.FC = () => {
     removeEducation,
     reorderEducation,
     reorderEducationBullets,
+    toggleItemPageBreak,
     editorState,
   } = useResumeStore();
   const { educationList } = resumeData;
@@ -109,13 +111,30 @@ export const EducationForm: React.FC = () => {
                     <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                       {displayDegree}
                     </span>
+                    {edu.pageBreakBefore && (
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800 shrink-0">
+                        📄 Break
+                      </span>
+                    )}
                   </div>
 
-                  {/* Reorder and Delete Controls */}
+                  {/* Reorder, Page Break and Delete Controls */}
                   <div
                     className="flex items-center gap-1 shrink-0"
                     onClick={(e) => e.stopPropagation()}
                   >
+                    <button
+                      type="button"
+                      onClick={() => toggleItemPageBreak('education', edu.identifier)}
+                      title={translate(lang, 'pageBreak.toggleBefore')}
+                      className={`p-1 rounded transition-colors ${
+                        edu.pageBreakBefore
+                          ? 'bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 font-bold'
+                          : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <Scissors className="w-3.5 h-3.5" />
+                    </button>
                     <button
                       type="button"
                       disabled={index === 0}
@@ -201,10 +220,22 @@ export const EducationForm: React.FC = () => {
                       type="text"
                       value={edu.specialization || ''}
                       onChange={(e) => updateEducation(edu.identifier, 'specialization', e.target.value)}
-                      placeholder="e.g. Structural Systems & Civil Infrastructure"
+                      placeholder="e.g. Structural Systems & Construction Engineering"
                       className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all"
                     />
                   </div>
+
+                  {/* Page Break Before Checkbox */}
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none text-xs font-medium text-slate-700 dark:text-slate-300 py-1">
+                    <input
+                      type="checkbox"
+                      checked={!!edu.pageBreakBefore}
+                      onChange={() => toggleItemPageBreak('education', edu.identifier)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer"
+                    />
+                    <Scissors className="w-3.5 h-3.5 text-blue-500" />
+                    <span>{translate(lang, 'pageBreak.toggleBefore')}</span>
+                  </label>
 
                   {/* Location & Dates */}
                   <div className="grid grid-cols-2 gap-3">

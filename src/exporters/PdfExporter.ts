@@ -7,37 +7,36 @@ export interface PdfExportOptions {
   fileName?: string;
 }
 
+const captureFilter = (domNode: Node): boolean => {
+  if (domNode instanceof HTMLElement) {
+    if (
+      domNode.classList.contains('pagebreak-ui-control') ||
+      domNode.classList.contains('no-print') ||
+      domNode.getAttribute('data-pagebreak-ui') === 'true'
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
 export class PdfExporter {
   /**
-   * Export a single resume sheet to a clean PDF document without blank overflow pages.
+   * Helper: Appends all sliced pages of an element to a jsPDF instance.
    */
-  public static async export(
-    elementId: string = 'resume-sheet',
-    options: PdfExportOptions = {}
+  private static async appendElementPages(
+    pdf: jsPDF,
+    element: HTMLElement,
+    standardPageWidth: number,
+    standardPageHeight: number,
+    isFirstElement: boolean,
+    isA4: boolean
   ): Promise<void> {
-    const { paperSize = 'letter', fileName = 'resume_EN.pdf' } = options;
-
-    // Clear any active focus highlighting before taking the snapshot
-    const activeSection = useResumeStore.getState().editorState.activeSection;
-    if (activeSection) {
-      useResumeStore.getState().setActiveSection(null);
-      await new Promise((resolve) => setTimeout(resolve, 80));
-    }
-
-    const node = document.getElementById(elementId) || document.getElementById('resume-sheet');
-    if (!node) {
-      throw new Error(`Element with id "${elementId}" not found for PDF export.`);
-    }
-
-    const isA4 = paperSize === 'a4';
-    const standardPageWidth = isA4 ? 8.27 : 8.5; // in inches
-    const standardPageHeight = isA4 ? 11.69 : 11.0; // in inches
-
-    // High resolution raster capture
-    const dataUrl = await toPng(node, {
+    const dataUrl = await toPng(element, {
       quality: 1.0,
       pixelRatio: 2,
       cacheBust: true,
+      filter: captureFilter,
     });
 
     const img = new Image();
@@ -53,36 +52,20 @@ export class PdfExporter {
     const targetAspectRatio = standardPageHeight / standardPageWidth;
     const pagePixelHeight = Math.floor(naturalWidth * targetAspectRatio);
 
-    // Guard against blank trailing pages caused by minor padding overflows (< 5%)
-    const heightRatio = naturalHeight / pagePixelHeight;
-    let totalPages = Math.ceil(heightRatio);
-    if (heightRatio <= 1.06) {
-      totalPages = 1;
-    }
+    // Calculate how many total pages are needed (ignoring minor sub-20px tolerances)
+    const totalPages = Math.max(1, Math.ceil((naturalHeight - 20) / pagePixelHeight));
 
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'in',
-      format: isA4 ? 'a4' : 'letter',
-    });
-
-    if (totalPages === 1) {
-      // Single Page: fit cleanly within the page bounds
-      pdf.addImage(dataUrl, 'PNG', 0, 0, standardPageWidth, standardPageHeight, undefined, 'FAST');
-      pdf.save(fileName);
-      return;
-    }
-
-    // Multi-Page Slicing: only create pages that have content
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+      if (!isFirstElement || pageIndex > 0) {
+        pdf.addPage(isA4 ? 'a4' : 'letter', 'portrait');
+      }
+
       const sourceY = pageIndex * pagePixelHeight;
       const sourceHeight = Math.min(pagePixelHeight, naturalHeight - sourceY);
 
-      // Skip empty slices
-      if (sourceHeight <= 10) continue;
-
-      if (pageIndex > 0) {
-        pdf.addPage(isA4 ? 'a4' : 'letter', 'portrait');
+      if (totalPages === 1) {
+        pdf.addImage(dataUrl, 'PNG', 0, 0, standardPageWidth, standardPageHeight, undefined, 'FAST');
+        break;
       }
 
       const canvas = document.createElement('canvas');
@@ -110,13 +93,46 @@ export class PdfExporter {
       const pageDataUrl = canvas.toDataURL('image/jpeg', 0.98);
       pdf.addImage(pageDataUrl, 'JPEG', 0, 0, standardPageWidth, standardPageHeight, undefined, 'FAST');
     }
+  }
+
+  /**
+   * Export a single resume sheet to a clean PDF document without blank overflow pages.
+   */
+  public static async export(
+    elementId: string = 'resume-sheet',
+    options: PdfExportOptions = {}
+  ): Promise<void> {
+    const { paperSize = 'letter', fileName = 'resume_EN.pdf' } = options;
+
+    // Clear any active focus highlighting before taking the snapshot
+    const activeSection = useResumeStore.getState().editorState.activeSection;
+    if (activeSection) {
+      useResumeStore.getState().setActiveSection(null);
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    }
+
+    const node = document.getElementById(elementId) || document.getElementById('resume-sheet');
+    if (!node) {
+      throw new Error(`Element with id "${elementId}" not found for PDF export.`);
+    }
+
+    const isA4 = paperSize === 'a4';
+    const standardPageWidth = isA4 ? 8.27 : 8.5; // in inches
+    const standardPageHeight = isA4 ? 11.69 : 11.0; // in inches
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'in',
+      format: isA4 ? 'a4' : 'letter',
+    });
+
+    await this.appendElementPages(pdf, node, standardPageWidth, standardPageHeight, true, isA4);
 
     pdf.save(fileName);
   }
 
   /**
-   * Export both English and French resume versions in a single combined 2-page PDF
-   * (Page 1 = English Resume, Page 2 = French Resume).
+   * Export both English and French resume versions in a single combined multi-page PDF.
    */
   public static async exportJointBilingual(options: {
     enElementId?: string;
@@ -146,23 +162,17 @@ export class PdfExporter {
     const standardPageWidth = isA4 ? 8.27 : 8.5;
     const standardPageHeight = isA4 ? 11.69 : 11.0;
 
-    const [enDataUrl, frDataUrl] = await Promise.all([
-      toPng(enNode, { quality: 1.0, pixelRatio: 2, cacheBust: true }),
-      toPng(frNode, { quality: 1.0, pixelRatio: 2, cacheBust: true }),
-    ]);
-
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'in',
       format: isA4 ? 'a4' : 'letter',
     });
 
-    // Page 1: English Resume
-    pdf.addImage(enDataUrl, 'PNG', 0, 0, standardPageWidth, standardPageHeight, undefined, 'FAST');
+    // English Document pages first
+    await this.appendElementPages(pdf, enNode, standardPageWidth, standardPageHeight, true, isA4);
 
-    // Page 2: French Resume
-    pdf.addPage(isA4 ? 'a4' : 'letter', 'portrait');
-    pdf.addImage(frDataUrl, 'PNG', 0, 0, standardPageWidth, standardPageHeight, undefined, 'FAST');
+    // French Document pages second
+    await this.appendElementPages(pdf, frNode, standardPageWidth, standardPageHeight, false, isA4);
 
     pdf.save(fileName);
   }

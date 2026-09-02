@@ -1,10 +1,115 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { useResumeStore } from '@/store';
 import { getTemplateById } from '@/templates';
 import { translate } from '@/i18n';
-import { Check, Edit3 } from 'lucide-react';
+import { Check, Edit3, FileText } from 'lucide-react';
+
+interface ResumePaperProps {
+  id: string;
+  isA4: boolean;
+  paperWidth: string;
+  children: React.ReactNode;
+}
+
+const ResumePaper: React.FC<ResumePaperProps> = ({ id, isA4, paperWidth, children }) => {
+  const paperRef = useRef<HTMLDivElement>(null);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const { editorState } = useResumeStore();
+  const lang = editorState.currentLanguage;
+
+  // Single page height in mm and aspect ratio
+  const singlePageMm = isA4 ? 297 : 279.4;
+  const pageAspectRatio = isA4 ? 297 / 210 : 11 / 8.5;
+
+  useLayoutEffect(() => {
+    const element = paperRef.current;
+    if (!element) return;
+
+    const measurePages = () => {
+      const width = element.offsetWidth || (isA4 ? 794 : 816);
+      const singlePagePx = width * pageAspectRatio;
+
+      const paperRect = element.getBoundingClientRect();
+      const sections = element.querySelectorAll('[id^="preview-section-"], section, header, footer, [data-page-break-spacer]');
+      let maxBottom = 0;
+
+      sections.forEach((sec) => {
+        const rect = sec.getBoundingClientRect();
+        const bottom = rect.bottom - paperRect.top;
+        if (bottom > maxBottom) {
+          maxBottom = bottom;
+        }
+      });
+
+      if (maxBottom <= 0) {
+        maxBottom = element.scrollHeight;
+      }
+
+      // Page is only added if content extends past 15px into the next page
+      const computedPages = Math.max(1, Math.ceil((maxBottom - 15) / singlePagePx));
+      setTotalPages(computedPages);
+    };
+
+    measurePages();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const resizeObserver = new ResizeObserver(() => {
+        measurePages();
+      });
+
+      resizeObserver.observe(element);
+
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
+  }, [isA4, pageAspectRatio, children]);
+
+  const minHeightStyle = `${totalPages * singlePageMm}mm`;
+
+  return (
+    <div
+      ref={paperRef}
+      id={id}
+      style={{
+        width: paperWidth,
+        minHeight: minHeightStyle,
+      }}
+      className="w-full bg-white shadow-paper print:shadow-none transition-all rounded-sm relative flex flex-col"
+    >
+      {/* Visual Page Boundary Guidelines (Screen Mode Only) */}
+      {totalPages > 1 &&
+        Array.from({ length: totalPages - 1 }).map((_, idx) => {
+          const pageIndex = idx + 1;
+          const topPosition = `${pageIndex * singlePageMm}mm`;
+
+          return (
+            <div
+              key={pageIndex}
+              data-pagebreak-ui="true"
+              style={{ top: topPosition }}
+              className="pagebreak-ui-control absolute left-0 right-0 -translate-y-1/2 z-30 pointer-events-none print:hidden flex items-center justify-center px-4"
+              aria-hidden="true"
+            >
+              <div className="grow border-t border-dashed border-slate-400/60 dark:border-slate-500/60" />
+              <span className="flex items-center gap-1.5 px-3 py-0.5 mx-2 rounded-full bg-slate-800/85 text-slate-100 text-[10px] font-semibold tracking-wide shadow-md backdrop-blur-xs">
+                <FileText className="w-3 h-3 text-blue-400" />
+                <span>{translate(lang, 'canvas.pageDivider', { page: pageIndex })}</span>
+              </span>
+              <div className="grow border-t border-dashed border-slate-400/60 dark:border-slate-500/60" />
+            </div>
+          );
+        })}
+
+      {/* Rendered Template Document */}
+      <div className="w-full flex-1 flex flex-col">
+        {children}
+      </div>
+    </div>
+  );
+};
 
 export const WorkspaceCanvas: React.FC = () => {
   const {
@@ -24,7 +129,6 @@ export const WorkspaceCanvas: React.FC = () => {
   const zoomScale = editorState.zoomLevelPercentage / 100;
   const isA4 = editorState.activePaperSize === 'a4';
   const paperWidth = isA4 ? '210mm' : '8.5in';
-  const paperMinHeight = isA4 ? 'min-h-[297mm]' : 'min-h-[11in]';
 
   // Smooth scroll right preview canvas when a section is focused in the sidebar
   useEffect(() => {
@@ -78,7 +182,7 @@ export const WorkspaceCanvas: React.FC = () => {
                       e.stopPropagation();
                       setLanguage('en');
                     }}
-                    className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 py-0.5 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                    className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 py-0.5 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                     <span>{translate(lang, 'canvas.dualView.editEnglish')}</span>
@@ -86,11 +190,8 @@ export const WorkspaceCanvas: React.FC = () => {
                 )}
               </div>
 
-              {/* English Document */}
-              <div
-                id="resume-sheet-en"
-                className={`w-full bg-white shadow-paper print:shadow-none transition-all rounded-sm overflow-hidden ${paperMinHeight}`}
-              >
+              {/* English Document with Dynamic Full Page Spanning */}
+              <ResumePaper id="resume-sheet-en" isA4={isA4} paperWidth={paperWidth}>
                 <TemplateComponent
                   resumeData={lang === 'en' ? resumeData : (englishResumeData || resumeData)}
                   onFieldChange={(path, val) => {
@@ -100,7 +201,7 @@ export const WorkspaceCanvas: React.FC = () => {
                   accentColor={editorState.activeAccentColor}
                   fontFamily={editorState.activeFontFamily}
                 />
-              </div>
+              </ResumePaper>
             </div>
 
             {/* 2. French Resume Paper */}
@@ -133,7 +234,7 @@ export const WorkspaceCanvas: React.FC = () => {
                       e.stopPropagation();
                       setLanguage('fr');
                     }}
-                    className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 py-0.5 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                    className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 py-0.5 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
                     <span>{translate(lang, 'canvas.dualView.editFrench')}</span>
@@ -141,12 +242,8 @@ export const WorkspaceCanvas: React.FC = () => {
                 )}
               </div>
 
-
-              {/* French Document */}
-              <div
-                id="resume-sheet-fr"
-                className={`w-full bg-white shadow-paper print:shadow-none transition-all rounded-sm overflow-hidden ${paperMinHeight}`}
-              >
+              {/* French Document with Dynamic Full Page Spanning */}
+              <ResumePaper id="resume-sheet-fr" isA4={isA4} paperWidth={paperWidth}>
                 <TemplateComponent
                   resumeData={lang === 'fr' ? resumeData : (frenchResumeData || resumeData)}
                   onFieldChange={(path, val) => {
@@ -156,23 +253,19 @@ export const WorkspaceCanvas: React.FC = () => {
                   accentColor={editorState.activeAccentColor}
                   fontFamily={editorState.activeFontFamily}
                 />
-              </div>
+              </ResumePaper>
             </div>
           </div>
         ) : (
-          /* Single Language View */
-          <div
-            id="resume-sheet"
-            style={{ width: paperWidth }}
-            className={`w-full bg-white shadow-paper print:shadow-none transition-all rounded-sm overflow-hidden ${paperMinHeight}`}
-          >
+          /* Single Language View with Dynamic Full Page Spanning */
+          <ResumePaper id="resume-sheet" isA4={isA4} paperWidth={paperWidth}>
             <TemplateComponent
               resumeData={resumeData}
               onFieldChange={updateField}
               accentColor={editorState.activeAccentColor}
               fontFamily={editorState.activeFontFamily}
             />
-          </div>
+          </ResumePaper>
         )}
       </div>
     </main>

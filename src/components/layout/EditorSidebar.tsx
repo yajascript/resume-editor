@@ -150,7 +150,7 @@ export const EditorSidebar: React.FC = () => {
   return (
     <aside
       style={{ width: `${sidebarWidth}px` }}
-      className="relative bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-[calc(100vh-3.25rem)] z-20 shrink-0 select-none"
+      className="editor-sidebar no-print relative bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-[calc(100vh-3.25rem)] z-20 shrink-0 select-none"
     >
       {/* Top Sidebar Header & Tabs */}
       <div className="p-3 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-2.5">

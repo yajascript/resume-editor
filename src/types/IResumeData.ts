@@ -17,4 +17,6 @@ export interface IResumeData {
   customSectionsList: ICustomSection[];
   sectionOrder: string[];
   sectionVisibility: Record<string, boolean>;
+  sectionPageBreaks?: Record<string, boolean>;
 }
+

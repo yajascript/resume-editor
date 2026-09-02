@@ -17,6 +17,7 @@ import {
   Calendar,
   Layers,
   Globe,
+  Scissors,
 } from 'lucide-react';
 
 export const ProjectsForm: React.FC = () => {
@@ -27,6 +28,7 @@ export const ProjectsForm: React.FC = () => {
     removeProject,
     reorderProject,
     reorderProjectBullets,
+    toggleItemPageBreak,
     editorState,
   } = useResumeStore();
   const { projectsList } = resumeData;
@@ -108,13 +110,30 @@ export const ProjectsForm: React.FC = () => {
                     <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                       {displayTitle}
                     </span>
+                    {proj.pageBreakBefore && (
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-medium border border-blue-200 dark:border-blue-800 shrink-0">
+                        📄 Break
+                      </span>
+                    )}
                   </div>
 
-                  {/* Reorder and Delete Controls */}
+                  {/* Reorder, Page Break and Delete Controls */}
                   <div
                     className="flex items-center gap-1 shrink-0"
                     onClick={(e) => e.stopPropagation()}
                   >
+                    <button
+                      type="button"
+                      onClick={() => toggleItemPageBreak('projects', proj.identifier)}
+                      title={translate(lang, 'pageBreak.toggleBefore')}
+                      className={`p-1 rounded transition-colors ${
+                        proj.pageBreakBefore
+                          ? 'bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 font-bold'
+                          : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <Scissors className="w-3.5 h-3.5" />
+                    </button>
                     <button
                       type="button"
                       disabled={index === 0}
@@ -235,6 +254,18 @@ export const ProjectsForm: React.FC = () => {
                       />
                     </div>
                   </div>
+
+                  {/* Page Break Before Checkbox */}
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none text-xs font-medium text-slate-700 dark:text-slate-300 py-1">
+                    <input
+                      type="checkbox"
+                      checked={!!proj.pageBreakBefore}
+                      onChange={() => toggleItemPageBreak('projects', proj.identifier)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700 cursor-pointer"
+                    />
+                    <Scissors className="w-3.5 h-3.5 text-blue-500" />
+                    <span>{translate(lang, 'pageBreak.toggleBefore')}</span>
+                  </label>
 
                   {/* Bullet Points Section */}
                   <div className="flex flex-col gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">

@@ -276,6 +276,17 @@ export const i18nDictionary: Record<SupportedLanguage, Record<string, string>> =
     'versions.importSuccess': '{count} versions imported successfully!',
     'versions.importError': 'Failed to import version backup.',
     'versions.close': 'Close',
+
+    // Page Breaks & Multi-page Navigation
+    'pageBreak.insert': 'Insert Page Break',
+    'pageBreak.remove': 'Remove Page Break',
+    'pageBreak.active': 'Page Break Active',
+    'pageBreak.page': 'Page',
+    'pageBreak.badge': 'Page Break (Page {page})',
+    'pageBreak.toggleBefore': 'Break page before this entry',
+    'pageBreak.toggleBeforeSection': 'Break page before this section',
+    'pageBreak.dividerLabel': 'Page {page}',
+    'canvas.pageDivider': 'Page {page} End',
   },
   fr: {
     // Application Branding & Navigation
@@ -552,6 +563,17 @@ export const i18nDictionary: Record<SupportedLanguage, Record<string, string>> =
     'versions.importSuccess': '{count} versions importées avec succès !',
     'versions.importError': 'Échec de l\'importation de la sauvegarde.',
     'versions.close': 'Fermer',
+
+    // Page Breaks & Multi-page Navigation
+    'pageBreak.insert': 'Insérer un saut de page',
+    'pageBreak.remove': 'Supprimer le saut de page',
+    'pageBreak.active': 'Saut de page actif',
+    'pageBreak.page': 'Page',
+    'pageBreak.badge': 'Saut de page (Page {page})',
+    'pageBreak.toggleBefore': 'Saut de page avant cette entrée',
+    'pageBreak.toggleBeforeSection': 'Saut de page avant cette section',
+    'pageBreak.dividerLabel': 'Page {page}',
+    'canvas.pageDivider': 'Fin de la page {page}',
   }
 };
 

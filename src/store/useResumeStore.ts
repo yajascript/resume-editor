@@ -86,6 +86,10 @@ interface ResumeStoreState {
   toggleSectionVisibility: (sectionKey: string) => void;
   reorderSections: (newOrder: string[]) => void;
 
+  // Page Breaks
+  toggleItemPageBreak: (section: 'experience' | 'education' | 'projects' | 'custom', itemId: string, subItemId?: string) => void;
+  toggleSectionPageBreak: (sectionKey: string) => void;
+
   // Editor State
   setResumeData: (data: IResumeData) => void;
   setTemplate: (templateId: string) => void;
@@ -681,6 +685,59 @@ export const useResumeStore = create<ResumeStoreState>()(
           const nextData: IResumeData = {
             ...state.resumeData,
             sectionOrder: newOrder,
+          };
+          commitDataUpdate(nextData);
+        },
+
+        toggleItemPageBreak: (section, itemId, subItemId) => {
+          const state = get();
+          const currentData = state.resumeData;
+          const nextData = structuredClone(currentData);
+
+          if (section === 'experience') {
+            nextData.experienceList = (nextData.experienceList || []).map((exp) =>
+              exp.identifier === itemId ? { ...exp, pageBreakBefore: !exp.pageBreakBefore } : exp
+            );
+          } else if (section === 'education') {
+            nextData.educationList = (nextData.educationList || []).map((edu) =>
+              edu.identifier === itemId ? { ...edu, pageBreakBefore: !edu.pageBreakBefore } : edu
+            );
+          } else if (section === 'projects') {
+            nextData.projectsList = (nextData.projectsList || []).map((proj) =>
+              proj.identifier === itemId ? { ...proj, pageBreakBefore: !proj.pageBreakBefore } : proj
+            );
+          } else if (section === 'custom') {
+            if (subItemId) {
+              nextData.customSectionsList = (nextData.customSectionsList || []).map((sec) => {
+                if (sec.identifier === itemId) {
+                  return {
+                    ...sec,
+                    items: (sec.items || []).map((it) =>
+                      it.identifier === subItemId ? { ...it, pageBreakBefore: !it.pageBreakBefore } : it
+                    ),
+                  };
+                }
+                return sec;
+              });
+            } else {
+              nextData.customSectionsList = (nextData.customSectionsList || []).map((sec) =>
+                sec.identifier === itemId ? { ...sec, pageBreakBefore: !sec.pageBreakBefore } : sec
+              );
+            }
+          }
+
+          commitDataUpdate(nextData);
+        },
+
+        toggleSectionPageBreak: (sectionKey) => {
+          const state = get();
+          const current = state.resumeData.sectionPageBreaks?.[sectionKey] ?? false;
+          const nextData: IResumeData = {
+            ...state.resumeData,
+            sectionPageBreaks: {
+              ...(state.resumeData.sectionPageBreaks || {}),
+              [sectionKey]: !current,
+            },
           };
           commitDataUpdate(nextData);
         },

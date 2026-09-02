@@ -151,4 +151,29 @@ describe('useResumeStore', () => {
         ?.bulletPoints
     ).toEqual(['Bullet 2', 'Bullet 1']);
   });
+
+  it('should toggle page breaks for items across experience, education, projects, and custom sections', () => {
+    const expId = useResumeStore.getState().resumeData.experienceList[0].identifier;
+    expect(useResumeStore.getState().resumeData.experienceList[0].pageBreakBefore).toBeFalsy();
+
+    useResumeStore.getState().toggleItemPageBreak('experience', expId);
+    expect(
+      useResumeStore.getState().resumeData.experienceList.find((e) => e.identifier === expId)
+        ?.pageBreakBefore
+    ).toBe(true);
+
+    useResumeStore.getState().toggleItemPageBreak('experience', expId);
+    expect(
+      useResumeStore.getState().resumeData.experienceList.find((e) => e.identifier === expId)
+        ?.pageBreakBefore
+    ).toBe(false);
+
+    // Section-level page breaks
+    expect(useResumeStore.getState().resumeData.sectionPageBreaks?.experience).toBeFalsy();
+    useResumeStore.getState().toggleSectionPageBreak('experience');
+    expect(useResumeStore.getState().resumeData.sectionPageBreaks?.experience).toBe(true);
+    useResumeStore.getState().toggleSectionPageBreak('experience');
+    expect(useResumeStore.getState().resumeData.sectionPageBreaks?.experience).toBe(false);
+  });
 });
+

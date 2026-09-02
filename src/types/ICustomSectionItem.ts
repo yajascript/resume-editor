@@ -4,4 +4,6 @@ export interface ICustomSectionItem {
   itemSubtitle?: string;
   dateRange?: string;
   bulletPoints: string[];
+  pageBreakBefore?: boolean;
 }
+
